@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Menus;
+  Dialogs, StdCtrls, ExtCtrls, Menus, uMainWindow;
 
 type
 
@@ -19,18 +19,23 @@ type
     lbl3: TLabel;
     btn1: TButton;
     pm_History: TPopupMenu;
+    lbl4: TLabel;
+    cbb_Connections: TComboBox;
     procedure miTemplateClick(Sender: TObject);
     procedure btnRecentlyUsedClick(Sender: TObject);
+    procedure cbb_ConnectionsChange(Sender: TObject);
   private
     { Private declarations }
+    cl: TConnectionList;
+    procedure ApplyHistoryEntry(historyEntry: String);
+    procedure FillPDBList(lastServiceName: String);
   public
     { Public declarations }
   end;
 
-function ShowDialog(Username, Password, Database: string; var connUsername, connPassword, connServiceName: String; var connHistory: TStringList): Boolean;
+function ShowDialog(var lastConnection: String; var connHistory: TStringList; cl: TConnectionList): Boolean;
 procedure PreparePopup(Owner: TComponent; var pm: TPopupMenu; connHistory: TStringList; clickProc: TNotifyEvent );
-procedure ParseMenuConnection(MenuCaption: string; var connUsername, connPassword, connServiceName: String);
-function replace_sid(serviceName, Database: String): String;
+
 var
   frmConnect: TfrmConnect;
 
@@ -54,75 +59,75 @@ begin
     end;
 end;
 
-procedure ParseMenuConnection(MenuCaption: string; var connUsername, connPassword, connServiceName: String);
-var
-    selText: String;
-    firstPos, secondPos: Integer;
-begin
-    selText:= StringReplace(MenuCaption, '&', '', [rfReplaceAll] );
-    firstPos:= PosEx('/', selText, 1);
-    secondPos:= PosEx('@', selText, firstPos+1);
-    connUsername:= Copy(selText, 1, firstPos-1);
-    connPassword:= Copy(selText, firstPos + 1, secondPos - firstPos-1);
-    connServiceName:= Copy(selText, secondPos+1, 255);
-end;
-
-function replace_sid(serviceName, Database: String): String;
-var
-  sidPos, closePos: Integer;
-begin
-  Result:= '';
-  sidPos:= PosEx('SID=', Database, 1);
-  if sidPos <= 0 then begin
-      ShowMessage('"SID=" not found in Database connection string');
-      Exit;
-  end;
-  closePos:= PosEx(')', Database, sidPos);
-  if closePos <= 0 then
-      ShowMessage('")" not found in Database connection string after "SID="');
-  Result:= Copy(Database, 1, sidPos-1)+'SERVICE_NAME='+serviceName+Copy(Database, closePos, Length(Database));
-end;
-
-function ShowDialog(Username, Password, Database: string; var connUsername, connPassword, connServiceName: String; var connHistory: TStringList): Boolean;
+function ShowDialog(var lastConnection: String; var connHistory: TStringList; cl: TConnectionList): Boolean;
 var
     f : TfrmConnect;
     connDB: String;
-    historyEntry: String;
     i: Integer;
-    mi: TMenuItem;
+    conn: TConnectionObject;
+    ConnectionName, Username, Password, ServiceName, ConnectAs: String;
 begin
     f:= TfrmConnect.Create(Application);
-    f.edtUsername.Text:= connUsername;
-    f.edtPassword.Text:= connPassword;
-    f.cbb_Connection.Items.Text:= dtmdl_ora.get_pdb_list(Username, Password, Database).Text;
-    f.cbb_Connection.ItemIndex:= f.cbb_Connection.Items.IndexOf(connServiceName);
+    f.cbb_Connections.Clear;
+    f.cl:= cl;
+    for i:= 0 to cl.Count - 1 do
+    begin
+        f.cbb_Connections.AddItem(cl.FindByIndex(i).ConnectionName, nil);
+    end;
 
+    f.ApplyHistoryEntry(lastConnection);
     PreparePopup(f, f.pm_History, connHistory, f.miTemplateClick );
-    if f.ShowModal = mrOk then begin
 
-        connDB:= replace_sid(f.cbb_Connection.Text, Database);
+    if f.ShowModal = mrOk then begin
+        conn:= cl.FindByIndex(f.cbb_Connections.ItemIndex);
+        connDB:= replace_sid(f.cbb_Connection.Text, conn.Database);
         if connDB <> '' then
             Result:= IDE_SetConnection(PChar(f.edtUsername.Text), PChar(f.edtPassword.Text), PChar(connDB));
             if Result then begin
-              connUsername:= f.edtUsername.Text;
-              connPassword:= f.edtPassword.Text;
-              connServiceName:= f.cbb_Connection.Text;
-              historyEntry:= connUsername+'/'+connPassword+'@'+connServiceName;
-              if connHistory.IndexOf(historyEntry) < 0 then
-                  connHistory.Add(historyEntry);
-            end;
+                ConnectionName:= f.cbb_Connections.Text;
+                Username:= f.edtUsername.Text;
+                Password:= f.edtPassword.Text;
+                ServiceName:= f.cbb_Connection.Text;
+                if ConnectAs <> '' then
+                    lastConnection:= Format('%s:%s/%s@%s as %s', [ConnectionName, Username, Password, ServiceName, ConnectAs])
+                else
+                    lastConnection:= Format('%s:%s/%s@%s', [ConnectionName, Username, Password, ServiceName]);
+                if connHistory.IndexOf(lastConnection) < 0 then
+                    connHistory.Add(lastConnection);
+            end else
+                MessageBox(Application.Handle, 'Connection failed', 'Îøèáêà', MB_OK +
+                  MB_ICONSTOP);
+
     end;
     f.Free;
 end;
 
-procedure TfrmConnect.miTemplateClick(Sender: TObject);
+procedure TfrmConnect.FillPDBList(lastServiceName: String);
 var
-    connUsername, connPassword, connServiceName: String;
+    conn: TConnectionObject;
 begin
-    ParseMenuConnection(TMenuItem(Sender).Caption, connUsername, connPassword, connServiceName);
-    edtUsername.Text:= connUsername;
-    edtPassword.Text:= connPassword;
-    cbb_Connection.ItemIndex:= cbb_Connection.Items.IndexOf(connServiceName);
+    if cbb_Connections.ItemIndex >= 0 then
+    begin
+        conn:= cl.FindByIndex(cbb_Connections.ItemIndex);
+        cbb_Connection.Items.Text:= dtmdl_ora.get_pdb_list(conn.Username, conn.Password, conn.Database).Text;
+        cbb_Connection.ItemIndex:= cbb_Connection.Items.IndexOf(lastServiceName);
+    end;
+end;
+
+procedure TfrmConnect.ApplyHistoryEntry(historyEntry: String);
+var
+    ConnectionName, Username, Password, ServiceName, ConnectAs: String;
+begin
+    ParseHistoryEntry(historyEntry, ConnectionName, Username, Password, ServiceName, ConnectAs);
+    cbb_Connections.ItemIndex:= cl.IndexByName(ConnectionName);
+    edtUsername.Text:= Username;
+    edtPassword.Text:= Password;
+    FillPDBList(ServiceName);
+end;
+
+procedure TfrmConnect.miTemplateClick(Sender: TObject);
+begin
+    ApplyHistoryEntry(TMenuItem(Sender).Caption);
 end;
 
 procedure TfrmConnect.btnRecentlyUsedClick(Sender: TObject);
@@ -133,6 +138,11 @@ begin
     r:= TButton(Sender).ClientRect;
     p:= TButton(Sender).ClientToScreen(Point(r.Left, r.Bottom));
     pm_History.Popup(p.X, p.Y);
+end;
+
+procedure TfrmConnect.cbb_ConnectionsChange(Sender: TObject);
+begin
+    FillPDBList('');
 end;
 
 end.
