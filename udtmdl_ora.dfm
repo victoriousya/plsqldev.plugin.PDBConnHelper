@@ -11,10 +11,13 @@ object dtmdl_ora: Tdtmdl_ora
   object orqry_srv_name: TOraQuery
     Session = orsn_cloner
     SQL.Strings = (
-      'select rpad('#39' '#39', level-1, '#39' '#39')||name as service_name'
+      'select rpad('#39' '#39', (level-1)*5, '#39' '#39')||name as service_name'
       'from v$pdbs t'
-      'where name != '#39'PDB$SEED'#39' '
-      'connect by prior t.con_id = t.snapshot_parent_con_id')
+      
+        'start with name != '#39'PDB$SEED'#39' and t.snapshot_parent_con_id is nu' +
+        'll'
+      'connect by prior t.con_id = t.snapshot_parent_con_id'
+      'order siblings by t.creation_time desc')
     Left = 88
     Top = 8
   end
@@ -27,7 +30,7 @@ object dtmdl_ora: Tdtmdl_ora
     Left = 16
     Top = 72
     Bitmap = {
-      494C010102000400040014001400FFFFFF00FF00FFFFFFFFFFFFFFFF424D3600
+      494C010102000400040014001400FFFFFF00FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000001400000001002000000000000019
       000000000000000000000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -238,6 +241,7 @@ object dtmdl_ora: Tdtmdl_ora
       0300000000000000C0003C000300000000000000C0007C000700000000000000
       E0007E000700000000000000FE41FFE41F00000000000000FFF8FFFF8F000000
       00000000FFFC3FFFC300000000000000FFF83FFF8300000000000000FFF87FFF
-      8700000000000000FFFFFFFFFF00000000000000FFFFFFFFFF00000000000000}
+      8700000000000000FFFFFFFFFF00000000000000FFFFFFFFFF00000000000000
+      00000000000000000000000000000000000000000000}
   end
 end

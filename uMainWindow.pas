@@ -30,6 +30,7 @@ type
 
 procedure ParseHistoryEntry(HistoryEntry: string; var ConnectionName, Username, Password, ServiceName, ConnectAs: String);
 function replace_sid(serviceName, Database: String): String;
+function get_sid(Database: String): String;
 
 
 implementation
@@ -85,6 +86,21 @@ begin
   Result:= Copy(Database, 1, sidPos-1)+'SERVICE_NAME='+serviceName+Copy(Database, closePos, Length(Database));
 end;
 
+function get_sid(Database: String): String;
+var
+  sidPos, closePos: Integer;
+begin
+  Result:= '';
+  sidPos:= PosEx('SID=', Database, 1);
+  if sidPos <= 0 then begin
+      ShowMessage('"SID=" not found in Database connection string');
+      Exit;
+  end;
+  closePos:= PosEx(')', Database, sidPos);
+  if closePos <= 0 then
+      ShowMessage('")" not found in Database connection string after "SID="');
+  Result:= Copy(Database, sidPos + Length('SID='), closePos - sidPos - Length('SID='));
+end;
 
 { TMainWindowMetods }
 
@@ -98,7 +114,7 @@ begin
     conn:= cl.FindByName(ConnectionName);
     Database:= replace_sid(ServiceName, conn.Database);
     if Database <> '' then
-        IDE_SetConnection(PChar(Username), PChar(Password), PChar(Database));
+        IDE_SetConnectionAs(PChar(Username), PChar(Password), PChar(Database), PChar(ConnectAs));
 end;
 
 { TConnectionList }
