@@ -39,21 +39,32 @@ type
     tsConnection: TTabSheet;
     tsHistory: TTabSheet;
     mmoHistory: TMemo;
-    btn2: TButton;
+    btn_ApplyHistory: TButton;
+    ts1: TTabSheet;
+    mmo_LoginHistory: TMemo;
+    btn_ApplyLoginHistory: TButton;
+    btn_LoginHistory: TButton;
+    pm_LoginHistory: TPopupMenu;
+    btn_ClearInvalid: TButton;
     procedure miTemplateClick(Sender: TObject);
     procedure btnRecentlyUsedClick(Sender: TObject);
     procedure cbb_BDBChange(Sender: TObject);
-    procedure btn2Click(Sender: TObject);
+    procedure btn_ApplyHistoryClick(Sender: TObject);
+    procedure btn_ApplyLoginHistoryClick(Sender: TObject);
+    procedure btn_LoginHistoryClick(Sender: TObject);
+    procedure btn_ClearInvalidClick(Sender: TObject);
   private
     { Private declarations }
     cl: TConnectionList;
     procedure ApplyHistoryEntry(historyEntry: String);
     procedure FillPDBList(lastServiceName: String);
+    procedure ApplyLoginHistoryEntry(historyEntry: String);
+    procedure miLoginTemplateClick(Sender: TObject);
   public
     { Public declarations }
   end;
 
-function ShowDialog(var lastConnection: String; var connHistory: TStringList; cl: TConnectionList): Boolean;
+function ShowDialog(var lastConnection: String; var connHistory, loginHistory: TStringList; cl: TConnectionList): Boolean;
 procedure PreparePopup(Owner: TComponent; var pm: TPopupMenu; connHistory: TStringList; clickProc: TNotifyEvent );
 
 var
@@ -80,7 +91,7 @@ begin
     end;
 end;
 
-function ShowDialog(var lastConnection: String; var connHistory: TStringList; cl: TConnectionList): Boolean;
+function ShowDialog(var lastConnection: String; var connHistory, loginHistory: TStringList; cl: TConnectionList): Boolean;
 var
     f : TfrmConnect;
     connDB: String;
@@ -88,6 +99,7 @@ var
     conn: TConnectionObject;
     ConnectionName, Username, Password, ServiceName, ConnectAs: String;
     mr: TModalResult;
+    loginStr: String;
 begin
     f:= TfrmConnect.Create(Application);
     f.cbb_BDB.Clear;
@@ -99,11 +111,14 @@ begin
 
     f.ApplyHistoryEntry(lastConnection);
     PreparePopup(f, f.pm_History, connHistory, f.miTemplateClick );
+    PreparePopup(f, f.pm_LoginHistory, loginHistory, f.miLoginTemplateClick );
     f.mmoHistory.Lines.Text:= connHistory.Text;
+    f.mmo_LoginHistory.Lines.Text:= LoginHistory.Text;
 
     mr:= f.ShowModal;
 
     connHistory.Text:= f.mmoHistory.Lines.Text;
+    LoginHistory.Text:= f.mmo_LoginHistory.Lines.Text;
 
     if mr = mrOk then begin
         conn:= cl.FindByIndex(f.cbb_BDB.ItemIndex);
@@ -123,6 +138,9 @@ begin
                         lastConnection:= Format('%s:%s/%s@%s', [ConnectionName, Username, Password, ServiceName]);
                     if connHistory.IndexOf(lastConnection) < 0 then
                         connHistory.Add(lastConnection);
+                    loginStr:= Format('%s/%s', [Username, Password]);
+                    if LoginHistory.IndexOf(loginStr) < 0 then
+                        LoginHistory.Add(loginStr);
                 except
                     on e: Exception do
                         ShowMessage(E.Message);
@@ -147,6 +165,9 @@ begin
                     lastConnection:= Format('%s:%s/%s@%s', [ConnectionName, Username, Password, ServiceName]);
                 if connHistory.IndexOf(lastConnection) < 0 then
                     connHistory.Add(lastConnection);
+                loginStr:= Format('%s/%s', [Username, Password]);
+                if LoginHistory.IndexOf(loginStr) < 0 then
+                    LoginHistory.Add(loginStr);
             except
                 on e: Exception do
                     ShowMessage(E.Message);
@@ -195,6 +216,20 @@ begin
     ApplyHistoryEntry(TMenuItem(Sender).Caption);
 end;
 
+procedure TfrmConnect.ApplyLoginHistoryEntry(historyEntry: String);
+var
+    ConnectionName, Username, Password, ServiceName, ConnectAs: String;
+begin
+    ParseLoginHistoryEntry(historyEntry, Username, Password);
+    edtUsername.Text:= Username;
+    edtPassword.Text:= Password;
+end;
+
+procedure TfrmConnect.miLoginTemplateClick(Sender: TObject);
+begin
+    ApplyLoginHistoryEntry(TMenuItem(Sender).Caption);
+end;
+
 procedure TfrmConnect.btnRecentlyUsedClick(Sender: TObject);
 var
    r: TRect;
@@ -210,7 +245,7 @@ begin
     FillPDBList('');
 end;
 
-procedure TfrmConnect.btn2Click(Sender: TObject);
+procedure TfrmConnect.btn_ApplyHistoryClick(Sender: TObject);
 var
     sl: TStringList;
 begin
@@ -219,6 +254,59 @@ begin
     PreparePopup(Self, Self.pm_History, sl, self.miTemplateClick );
     sl.Free;
     pgc1.ActivePage:= tsConnection;
+end;
+
+procedure TfrmConnect.btn_ApplyLoginHistoryClick(Sender: TObject);
+var
+    sl: TStringList;
+begin
+    sl:= TStringList.Create;
+    sl.Text:= mmo_LoginHistory.Text;
+    PreparePopup(Self, Self.pm_LoginHistory, sl, self.miLoginTemplateClick );
+    sl.Free;
+    pgc1.ActivePage:= tsConnection;
+end;
+
+procedure TfrmConnect.btn_LoginHistoryClick(Sender: TObject);
+var
+   r: TRect;
+   p: TPoint;
+begin
+    r:= TButton(Sender).ClientRect;
+    p:= TButton(Sender).ClientToScreen(Point(r.Left, r.Bottom));
+    pm_LoginHistory.Popup(p.X, p.Y);
+end;
+
+procedure TfrmConnect.btn_ClearInvalidClick(Sender: TObject);
+var
+    ConnectionName, Username, Password, ServiceName, ConnectAs: String;
+    cUsername, cPassword, cDatabase, cConnectAs: PANSIChar;
+    sl: TStringList;
+    i: Integer;
+    ConnRes: Boolean;
+    currConnRes: Boolean;
+    conn: TConnectionObject;
+    connDB: string;
+begin
+    currConnRes:= IDE_GetConnectionInfoEx(0, cUsername, cPassword, cDatabase, cConnectAs);
+    sl:= TStringList.Create;
+    sl.Text:= mmoHistory.Text;
+    mmoHistory.Lines.Clear;
+    for i:= 0 to sl.Count-1 do begin
+        ParseHistoryEntry(sl[i], ConnectionName, Username, Password, ServiceName, ConnectAs);
+        conn:= cl.FindByName(ConnectionName);
+        connDB:= replace_sid(Trim(ServiceName), conn.Database);
+        if connDB <> '' then
+            ConnRes:= IDE_SetConnectionAs(PChar(Username), PChar(Password), PChar(connDB), PChar(ConnectAs))
+        else
+            ConnRes:= False;
+        if ConnRes then
+            mmoHistory.Lines.Add(sl[i]);
+    end;
+    sl.Free;
+    if currConnRes then
+        IDE_SetConnectionAs(cUsername, cPassword, cDatabase, cConnectAs)
+
 end;
 
 end.

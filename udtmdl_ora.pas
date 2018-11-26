@@ -3,19 +3,22 @@ unit udtmdl_ora;
 interface
 
 uses
-  SysUtils, Classes, DB, DBAccess, Ora, MemDS, Dialogs, ImgList, Controls;
+  SysUtils, Classes, DB, DBAccess, Ora, MemDS, Dialogs, ImgList, Controls,
+  DAScript, OraScript;
 
 type
   Tdtmdl_ora = class(TDataModule)
     orsn_cloner: TOraSession;
     orqry_srv_name: TOraQuery;
     il_common: TImageList;
+    orqryPdbs: TOraQuery;
+    orscrptDropPdb: TOraScript;
   private
     { Private declarations }
-    function connect(Username, Password, Database: string): Boolean;
-    procedure disconnect;
   public
     { Public declarations }
+    function connect(Username, Password, Database: string): Boolean;
+    procedure disconnect;
     function test_connection(Username, Password, Database: string): Boolean;
     function get_pdb_list(
         Username, Password, Database: string

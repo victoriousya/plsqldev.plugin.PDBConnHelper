@@ -150,6 +150,16 @@ object frmConnect: TfrmConnect
             'SYSDBA'
             'SYSOPER')
         end
+        object btn_LoginHistory: TButton
+          Left = 296
+          Top = 32
+          Width = 25
+          Height = 25
+          Caption = '...'
+          TabOrder = 8
+          TabStop = False
+          OnClick = btn_LoginHistoryClick
+        end
       end
     end
     object tsHistory: TTabSheet
@@ -169,20 +179,61 @@ object frmConnect: TfrmConnect
         TabOrder = 0
         WordWrap = False
       end
-      object btn2: TButton
+      object btn_ApplyHistory: TButton
+        Left = 91
+        Top = 136
+        Width = 75
+        Height = 25
+        Caption = 'Apply'
+        TabOrder = 1
+        OnClick = btn_ApplyHistoryClick
+      end
+      object btn_ClearInvalid: TButton
+        Left = 208
+        Top = 136
+        Width = 75
+        Height = 25
+        Caption = 'Clear_Invalid'
+        TabOrder = 2
+        OnClick = btn_ClearInvalidClick
+      end
+    end
+    object ts1: TTabSheet
+      Caption = 'Login history'
+      ImageIndex = 2
+      DesignSize = (
+        369
+        170)
+      object mmo_LoginHistory: TMemo
+        Left = 0
+        Top = 0
+        Width = 369
+        Height = 129
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Lines.Strings = (
+          'mmoHistory')
+        TabOrder = 0
+        WordWrap = False
+      end
+      object btn_ApplyLoginHistory: TButton
         Left = 147
         Top = 136
         Width = 75
         Height = 25
         Caption = 'Apply'
         TabOrder = 1
-        OnClick = btn2Click
+        OnClick = btn_ApplyLoginHistoryClick
       end
     end
   end
   object pm_History: TPopupMenu
     AutoPopup = False
     Left = 48
+    Top = 56
+  end
+  object pm_LoginHistory: TPopupMenu
+    AutoPopup = False
+    Left = 64
     Top = 56
   end
 end

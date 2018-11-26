@@ -2,7 +2,7 @@ unit uMainWindow;
 
 interface
 
-uses Classes, Dialogs, Contnrs, StrUtils, SysUtils;
+uses Classes, Dialogs, Contnrs, StrUtils, SysUtils, Windows, Forms;
 
 type
     TConnectionObject = class(TObject)
@@ -29,6 +29,7 @@ type
     end;
 
 procedure ParseHistoryEntry(HistoryEntry: string; var ConnectionName, Username, Password, ServiceName, ConnectAs: String);
+procedure ParseLoginHistoryEntry(HistoryEntry: string; var Username, Password: String);
 function replace_sid(serviceName, Database: String): String;
 function get_sid(Database: String): String;
 
@@ -66,6 +67,24 @@ begin
         Password:= '';
         ServiceName:= '';
         ConnectAs:= '';
+    end;
+
+end;
+
+procedure ParseLoginHistoryEntry(HistoryEntry: string; var Username, Password: String);
+var
+    slashPos: Integer;
+    selText: string;
+begin
+//  ConnectionName:Username/Password@Database[ as ConnectAs]
+    if Length(HistoryEntry) > 0 then begin
+        selText:= StringReplace(HistoryEntry, '&', '', [rfReplaceAll] );
+        slashPos:= PosEx('/', selText, 1);
+        Username:= Copy(selText, 1, slashPos - 1);
+        Password:= Copy(selText, slashPos + 1, 100);
+    end else begin
+        Username:= '';
+        Password:= '';
     end;
 
 end;
@@ -109,12 +128,16 @@ var
     ConnectionName, Username, Password, ServiceName, ConnectAs: String;
     Database: string;
     conn: TConnectionObject;
+    ConnResult: Boolean;
 begin
     ParseHistoryEntry(TMenuItem(Sender).Caption, ConnectionName, Username, Password, ServiceName, ConnectAs);
     conn:= cl.FindByName(ConnectionName);
     Database:= replace_sid(ServiceName, conn.Database);
     if Database <> '' then
-        IDE_SetConnectionAs(PChar(Username), PChar(Password), PChar(Database), PChar(ConnectAs));
+        ConnResult:= IDE_SetConnectionAs(PChar(Username), PChar(Password), PChar(Database), PChar(ConnectAs));
+        if not ConnResult then
+            MessageBox(Application.Handle, 'Connection failed', 'Ошибка', MB_OK +
+              MB_ICONSTOP);
 end;
 
 { TConnectionList }

@@ -19,7 +19,8 @@ uses
   uConfig in 'uConfig.pas' {fConfig},
   udtmdl_ora in 'udtmdl_ora.pas' {dtmdl_ora: TDataModule},
   ufrmConnect in 'ufrmConnect.pas' {frmConnect},
-  uMainWindow in 'uMainWindow.pas';
+  uMainWindow in 'uMainWindow.pas',
+  ufrmPdbManager in 'ufrmPdbManager.pas' {frmPdbManager};
 
 {$R *.res}
 

@@ -9,6 +9,7 @@ const // Description of this Plug-In (as displayed in Plug-In configuration dial
   Plugin_Desc = 'PDB(Ora12c) Connection Helper';
   TB_BTN_NEW_CONN = 1;
   TB_BTN_RECONNECT = 2;
+  TB_BTN_RECYCLE = 3;
 
 procedure SetRoamingFolderPath;
 
@@ -19,13 +20,14 @@ var
 
 implementation
 
-uses IniFiles, uConfig, udtmdl_ora, ufrmConnect, StrUtils, Menus;
+uses IniFiles, uConfig, udtmdl_ora, ufrmConnect, StrUtils, Menus, 
+  ufrmPdbManager;
 
 var
 //    Username, Password, ConnectAs, connUsername, connPassword, connServiceName: String;
-    connHistory: TStringList;
+    connHistory, LoginHistory: TStringList;
     ini_file_name: string;
-    tb_bmp, tb_dd_bmp: TBitmap;
+    tb_bmp, tb_dd_bmp, tb_recyle_bmp: TBitmap;
     mwm: TMainWindowMethods;
     pm_dd: TPopupMenu;
     lastConnection: String;
@@ -90,11 +92,17 @@ begin
     ini:= TIniFile.Create(ini_file_name);
 
     ini.WriteString('LastConnection', 'Value', lastConnection);
+    ini.EraseSection('ConnectionsList');
     for i:= 0 to cl.Count - 1 do begin
         ini.WriteString('ConnectionsList', 'Item'+IntToStr(i), (cl[i] as TConnectionObject).getAsString);
     end;
+    ini.EraseSection('ConnectionHistory');
     for i:= 0 to connHistory.Count - 1 do begin
         ini.WriteString('ConnectionHistory', 'Item'+IntToStr(i), connHistory[i]);
+    end;
+    ini.EraseSection('LoginHistory');
+    for i:= 0 to LoginHistory.Count - 1 do begin
+        ini.WriteString('LoginHistory', 'Item'+IntToStr(i), LoginHistory[i]);
     end;
 
     ini.UpdateFile;
@@ -135,6 +143,15 @@ begin
     end;
     lHistory.Free;
 
+    lHistory:= TStringList.Create;
+    ini.ReadSectionValues('LoginHistory', lHistory);
+    LoginHistory.Clear;
+    for i:= 0 to lHistory.Count - 1 do begin
+      replStr:= Copy( lHistory[i], Pos('=', lHistory[i])+1, 255);
+      LoginHistory.Add(replStr);
+    end;
+    lHistory.Free;
+
     ini.UpdateFile;
     ini.Free;
     write_ini_settings;
@@ -155,7 +172,9 @@ begin
     dtmdl_ora:= Tdtmdl_ora.Create(Application);
     tb_bmp:= TBitmap.Create;
     tb_dd_bmp:= TBitmap.Create;
+    tb_recyle_bmp:= TBitmap.Create;
     connHistory:= TStringList.Create;
+    LoginHistory:= TStringList.Create;
     pm_dd:= TPopupMenu.Create(Application);
     mwm:= TMainWindowMethods.Create(Application);
     cl:= TConnectionList.Create;
@@ -171,8 +190,10 @@ begin
 
     dtmdl_ora.il_common.GetBitmap(0, tb_bmp);
     dtmdl_ora.il_common.GetBitmap(1, tb_dd_bmp);
+    dtmdl_ora.il_common.GetBitmap(2, tb_recyle_bmp);
     IDE_CreateToolButton(PlugInID, TB_BTN_NEW_CONN, 'PDB New Connection', '', tb_bmp.Handle);
     IDE_CreateToolButton(PlugInID, TB_BTN_RECONNECT, 'PDB Reconnect', '', tb_dd_bmp.Handle);
+    IDE_CreateToolButton(PlugInID, TB_BTN_RECYCLE, 'PDB Recycle', '', tb_recyle_bmp.Handle);
 end;
 
 procedure OnDeactivate; cdecl;
@@ -185,7 +206,9 @@ procedure OnDestroy; cdecl;
 begin
     FreeAndNil(tb_bmp);
     FreeAndNil(tb_dd_bmp);
+    FreeAndNil(tb_recyle_bmp);
     FreeAndNil(connHistory);
+    FreeAndNil(LoginHistory);
     FreeAndNil(pm_dd);
     FreeAndNil(mwm);
     FreeAndNil(cl);
@@ -206,7 +229,7 @@ var
 begin
     case Index of
     TB_BTN_NEW_CONN: begin
-            if ufrmConnect.ShowDialog(lastConnection, connHistory, cl) then
+            if ufrmConnect.ShowDialog(lastConnection, connHistory, LoginHistory, cl) then
                 write_ini_settings;
         end;
     TB_BTN_RECONNECT: begin
@@ -215,6 +238,9 @@ begin
           p:= Point(10, 10);
           p:= Mouse.CursorPos;
           pm_dd.Popup(p.X, p.Y);
+        end;
+    TB_BTN_RECYCLE: begin
+            ufrmPdbManager.ShowDialog(cl);
         end;
     end;
 end;
