@@ -27,7 +27,7 @@ type
     edtPassword: TEdit;
     btnRecentlyUsed: TButton;
     lbl3: TLabel;
-    btn1: TButton;
+    btn_Connect: TButton;
     pm_History: TPopupMenu;
     lbl4: TLabel;
     cbb_BDB: TComboBox;
@@ -284,28 +284,25 @@ var
     sl: TStringList;
     i: Integer;
     ConnRes: Boolean;
-    currConnRes: Boolean;
     conn: TConnectionObject;
     connDB: string;
 begin
-    currConnRes:= IDE_GetConnectionInfoEx(0, cUsername, cPassword, cDatabase, cConnectAs);
     sl:= TStringList.Create;
     sl.Text:= mmoHistory.Text;
     mmoHistory.Lines.Clear;
     for i:= 0 to sl.Count-1 do begin
+        Application.ProcessMessages;
         ParseHistoryEntry(sl[i], ConnectionName, Username, Password, ServiceName, ConnectAs);
         conn:= cl.FindByName(ConnectionName);
         connDB:= replace_sid(Trim(ServiceName), conn.Database);
         if connDB <> '' then
-            ConnRes:= IDE_SetConnectionAs(PChar(Username), PChar(Password), PChar(connDB), PChar(ConnectAs))
+            ConnRes:= dtmdl_ora.test_connection(Username, Password, connDB, ConnectAs)
         else
             ConnRes:= False;
         if ConnRes then
             mmoHistory.Lines.Add(sl[i]);
     end;
     sl.Free;
-    if currConnRes then
-        IDE_SetConnectionAs(cUsername, cPassword, cDatabase, cConnectAs)
 
 end;
 

@@ -1,7 +1,7 @@
 object frmPdbManager: TfrmPdbManager
   Left = 468
   Top = 239
-  Width = 566
+  Width = 720
   Height = 418
   Caption = 'PDB Manager'
   Color = clBtnFace
@@ -17,7 +17,7 @@ object frmPdbManager: TfrmPdbManager
   object pnl1: TPanel
     Left = 0
     Top = 0
-    Width = 558
+    Width = 712
     Height = 41
     Align = alTop
     Caption = ' '
@@ -73,11 +73,11 @@ object frmPdbManager: TfrmPdbManager
   object dbgrd1: TDBGrid
     Left = 0
     Top = 41
-    Width = 558
-    Height = 261
+    Width = 712
+    Height = 350
     Align = alClient
     DataSource = ds1
-    Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit]
+    Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
     TabOrder = 1
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
@@ -85,6 +85,12 @@ object frmPdbManager: TfrmPdbManager
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
     Columns = <
+      item
+        Expanded = False
+        FieldName = 'base_name'
+        Width = 174
+        Visible = True
+      end
       item
         Expanded = False
         FieldName = 'name'
@@ -109,15 +115,6 @@ object frmPdbManager: TfrmPdbManager
         Width = 80
         Visible = True
       end>
-  end
-  object mmoLog: TMemo
-    Left = 0
-    Top = 302
-    Width = 558
-    Height = 89
-    Align = alBottom
-    ReadOnly = True
-    TabOrder = 2
   end
   object ds1: TDataSource
     DataSet = dtmdl_ora.orqryPdbs

@@ -30,7 +30,7 @@ object dtmdl_ora: Tdtmdl_ora
     Left = 16
     Top = 72
     Bitmap = {
-      494C010103000400040014001400FFFFFF00FF00FFFFFFFFFFFFFFFF424D3600
+      494C010103000400040014001400FFFFFF00FF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000001400000001002000000000000019
       000000000000000000000000000000000000FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -241,15 +241,17 @@ object dtmdl_ora: Tdtmdl_ora
       0300000000000000C0003C000380000000000000C0007C000780001000000000
       E0007E0007E0001000000000FE41FFE41FF041F000000000FFF8FFFF8FE0E0F0
       00000000FFFC3FFFC3E0403000000000FFF83FFF83E0403000000000FFF87FFF
-      87F0007000000000FFFFFFFFFFF803F000000000FFFFFFFFFFFFFFF000000000}
+      87F0007000000000FFFFFFFFFFF803F000000000FFFFFFFFFFFFFFF000000000
+      00000000000000000000000000000000000000000000}
   end
   object orqryPdbs: TOraQuery
     Session = orsn_cloner
     SQL.Strings = (
       
-        'select t.name, t.creation_time, t.open_mode, count(s.sid) as con' +
-        'n_count'
+        'select p.name as base_name, t.name, t.creation_time, t.open_mode' +
+        ', count(s.sid) as conn_count'
       'from v$pdbs t'
+      'join v$pdbs p on p.con_id = t.snapshot_parent_con_id'
       'left'
       
         'join containers(v$session) s on upper(s.service_name) = upper(t.' +
@@ -258,7 +260,9 @@ object dtmdl_ora: Tdtmdl_ora
       
         '  and not exists(select 1 from v$pdbs p where p.snapshot_parent_' +
         'con_id = t.con_id)'
-      'group by t.name, t.creation_time, t.open_mode, t.create_scn'
+      
+        'group by p.name, t.name, t.creation_time, t.open_mode, t.create_' +
+        'scn'
       'order by t.create_scn desc')
     Left = 144
     Top = 8

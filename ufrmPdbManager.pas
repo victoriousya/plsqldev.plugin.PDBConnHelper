@@ -16,7 +16,6 @@ type
     dbgrd1: TDBGrid;
     btnDrop: TSpeedButton;
     btnShow: TSpeedButton;
-    mmoLog: TMemo;
     procedure btnShowClick(Sender: TObject);
     procedure btnDropClick(Sender: TObject);
   private

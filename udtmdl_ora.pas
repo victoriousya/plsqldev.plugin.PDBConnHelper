@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils, Classes, DB, DBAccess, Ora, MemDS, Dialogs, ImgList, Controls,
-  DAScript, OraScript;
+  DAScript, OraScript, OraClasses;
 
 type
   Tdtmdl_ora = class(TDataModule)
@@ -17,9 +17,9 @@ type
     { Private declarations }
   public
     { Public declarations }
-    function connect(Username, Password, Database: string): Boolean;
+    function connect(Username, Password, Database: string; ConnectAs: string = 'NORMAL'): Boolean;
     procedure disconnect;
-    function test_connection(Username, Password, Database: string): Boolean;
+    function test_connection(Username, Password, Database: string; ConnectAs: string = 'NORMAL'; ShowMsg: Boolean = True): Boolean;
     function get_pdb_list(
         Username, Password, Database: string
     ): TStringList;
@@ -34,12 +34,18 @@ implementation
 
 { Tdtmdl_ora }
 
-function Tdtmdl_ora.connect(Username, Password, Database: string): Boolean;
+function Tdtmdl_ora.connect(Username, Password, Database: string; ConnectAs: string = 'NORMAL'): Boolean;
 begin
     orsn_cloner.Username:= Username;
     orsn_cloner.Password:= Password;
     orsn_cloner.Server:= Database;
     orsn_cloner.ConnectPrompt:= False;
+    if ConnectAs = 'NORMAL' then
+        orsn_cloner.ConnectMode:= cmNormal
+    else if ConnectAs = 'SYSDBA' then
+        orsn_cloner.ConnectMode:= cmSYSDBA
+    else if ConnectAs = 'SYSOPER' then
+        orsn_cloner.ConnectMode:= cmSYSOPER;
     orsn_cloner.Connect;
     Result:= orsn_cloner.Connected;
 end;
@@ -67,16 +73,17 @@ begin
 end;
 
 function Tdtmdl_ora.test_connection(Username, Password,
-  Database: string): Boolean;
+  Database: string; ConnectAs: string = 'NORMAL'; ShowMsg: Boolean = True): Boolean;
 var
     dummy: Integer;
 begin
     try
-        Result:= connect(Username, Password, Database);
+        Result:= connect(Username, Password, Database, ConnectAs);
         if Result then disconnect;
     except
         on E: Exception do begin
-            dummy:= MessageDlg(E.Message,  mtError, [mbOK], 0);
+            if ShowMsg then
+                dummy:= MessageDlg(E.Message,  mtError, [mbOK], 0);
             Result:= False;
         end;
     end;

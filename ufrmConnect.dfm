@@ -77,7 +77,7 @@ object frmConnect: TfrmConnect
           Top = 32
           Width = 193
           Height = 21
-          TabOrder = 0
+          TabOrder = 1
           Text = 'edtUsername'
         end
         object edtPassword: TEdit
@@ -85,7 +85,7 @@ object frmConnect: TfrmConnect
           Top = 56
           Width = 193
           Height = 21
-          TabOrder = 1
+          TabOrder = 2
           Text = 'edtPassword'
         end
         object btnRecentlyUsed: TButton
@@ -94,18 +94,18 @@ object frmConnect: TfrmConnect
           Width = 25
           Height = 25
           Caption = '...'
-          TabOrder = 3
+          TabOrder = 5
           TabStop = False
           OnClick = btnRecentlyUsedClick
         end
-        object btn1: TButton
+        object btn_Connect: TButton
           Left = 96
           Top = 128
           Width = 193
           Height = 25
           Caption = 'Connect'
           ModalResult = 1
-          TabOrder = 4
+          TabOrder = 6
         end
         object cbb_BDB: TComboBox
           Left = 96
@@ -114,16 +114,18 @@ object frmConnect: TfrmConnect
           Height = 21
           Style = csDropDownList
           ItemHeight = 13
-          TabOrder = 2
+          TabOrder = 0
           OnChange = cbb_BDBChange
         end
         object cbb_Connection: TcxComboBox
           Left = 96
           Top = 80
           Properties.DropDownListStyle = lsEditFixedList
+          Properties.DropDownRows = 16
+          Properties.DropDownSizeable = True
           Style.BorderStyle = ebs3D
           Style.Shadow = False
-          TabOrder = 5
+          TabOrder = 3
           Width = 193
         end
         object btnOwnerConnect: TButton
@@ -133,7 +135,8 @@ object frmConnect: TfrmConnect
           Height = 25
           Caption = 'root'
           ModalResult = 6
-          TabOrder = 6
+          TabOrder = 7
+          TabStop = False
         end
         object cbbConnectAs: TComboBox
           Left = 96
@@ -143,7 +146,7 @@ object frmConnect: TfrmConnect
           Style = csDropDownList
           ItemHeight = 13
           ItemIndex = 0
-          TabOrder = 7
+          TabOrder = 4
           Text = 'NORMAL'
           Items.Strings = (
             'NORMAL'
