@@ -1,8 +1,8 @@
 object frmPdbManager: TfrmPdbManager
-  Left = 468
-  Top = 239
-  Width = 720
-  Height = 418
+  Left = 658
+  Top = 308
+  Width = 870
+  Height = 630
   Caption = 'PDB Manager'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,7 +17,7 @@ object frmPdbManager: TfrmPdbManager
   object pnl1: TPanel
     Left = 0
     Top = 0
-    Width = 712
+    Width = 862
     Height = 41
     Align = alTop
     Caption = ' '
@@ -70,14 +70,18 @@ object frmPdbManager: TfrmPdbManager
       TabOrder = 0
     end
   end
-  object dbgrd1: TDBGrid
+  object crdbgrd1: TCRDBGrid
     Left = 0
     Top = 41
-    Width = 712
-    Height = 350
+    Width = 862
+    Height = 562
+    OptionsEx = [dgeEnableSort, dgeFilterBar, dgeLocalFilter, dgeLocalSorting, dgeRecordCount, dgeStretch]
     Align = alClient
+    BorderStyle = bsNone
+    Ctl3D = True
     DataSource = ds1
-    Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    Options = [dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+    ParentCtl3D = False
     TabOrder = 1
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
@@ -87,32 +91,37 @@ object frmPdbManager: TfrmPdbManager
     Columns = <
       item
         Expanded = False
-        FieldName = 'base_name'
-        Width = 174
+        FieldName = 'BASE_NAME'
+        Title.Caption = 'Base name'
+        Width = 249
         Visible = True
       end
       item
         Expanded = False
-        FieldName = 'name'
+        FieldName = 'NAME'
+        Title.Caption = 'Cloned DB'
+        Width = 227
+        Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'CREATION_TIME'
+        Title.Caption = 'Created'
+        Width = 112
+        Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'OPEN_MODE'
+        Title.Caption = 'Open mode'
+        Width = 89
+        Visible = True
+      end
+      item
+        Expanded = False
+        FieldName = 'CONN_COUNT'
+        Title.Caption = 'Connections'
         Width = 162
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'creation_time'
-        Width = 143
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'open_mode'
-        Width = 107
-        Visible = True
-      end
-      item
-        Expanded = False
-        FieldName = 'conn_count'
-        Width = 80
         Visible = True
       end>
   end

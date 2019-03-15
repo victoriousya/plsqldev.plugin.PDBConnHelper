@@ -128,8 +128,9 @@ begin
     ini.ReadSectionValues('ConnectionsList', lConnections);
     cl.Clear;
     for i:= 0 to lConnections.Count - 1 do begin
-      replStr:= Copy( lConnections[i], Pos('=', lConnections[i])+1, 255);
-      cl.AddConnection(replStr);
+        replStr:= Copy( lConnections[i], Pos('=', lConnections[i])+1, 255);
+        if Trim(replStr) <> '' then
+            cl.AddConnection(replStr);
     end;
     lConnections.Clear;
     if cl.Count = 0 then cl.AddDefault;
@@ -138,8 +139,9 @@ begin
     ini.ReadSectionValues('ConnectionHistory', lHistory);
     connHistory.Clear;
     for i:= 0 to lHistory.Count - 1 do begin
-      replStr:= Copy( lHistory[i], Pos('=', lHistory[i])+1, 255);
-      connHistory.Add(replStr);
+        replStr:= Copy( lHistory[i], Pos('=', lHistory[i])+1, 255);
+        if Trim(replStr) <> '' then
+            connHistory.Add(replStr);
     end;
     lHistory.Free;
 
@@ -147,8 +149,9 @@ begin
     ini.ReadSectionValues('LoginHistory', lHistory);
     LoginHistory.Clear;
     for i:= 0 to lHistory.Count - 1 do begin
-      replStr:= Copy( lHistory[i], Pos('=', lHistory[i])+1, 255);
-      LoginHistory.Add(replStr);
+        replStr:= Copy( lHistory[i], Pos('=', lHistory[i])+1, 255);
+        if Trim(replStr) <> '' then
+            LoginHistory.Add(replStr);
     end;
     lHistory.Free;
 

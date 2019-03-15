@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DB, uMainWindow, StdCtrls, ExtCtrls, Grids, DBGrids, Buttons;
+  Dialogs, DB, uMainWindow, StdCtrls, ExtCtrls, Grids, DBGrids, CRGrid, Buttons;
 
 type
   TfrmPdbManager = class(TForm)
@@ -13,9 +13,9 @@ type
     lbl4: TLabel;
     cbb_BDB: TComboBox;
     lblConnectioError: TLabel;
-    dbgrd1: TDBGrid;
     btnDrop: TSpeedButton;
     btnShow: TSpeedButton;
+    crdbgrd1: TCRDBGrid;
     procedure btnShowClick(Sender: TObject);
     procedure btnDropClick(Sender: TObject);
   private

@@ -81,14 +81,63 @@ procedure PreparePopup(Owner: TComponent; var pm: TPopupMenu; connHistory: TStri
 var
     i: Integer;
     mi: TMenuItem;
+    miGrp: TMenuItem;
+    sidMenuList: TStringList;
+    sidMenuListIdx: Integer;
+    sid: string;
+
+    function getSid(i_str: String): string;
+    var
+        atPos, spacePos: Integer;
+    begin
+        atPos:= PosEx('@', i_str, 1);
+        spacePos:= PosEx(' ', i_str, atPos);
+        result:= Copy(i_str, atPos+1, spacePos - atPos - 1);
+    end;
 begin
+    sidMenuList:= TStringList.Create;
     pm.Items.Clear;
     for i:= 0 to connHistory.Count-1 do begin
-        mi:= TMenuItem.Create(Owner);
-        mi.Caption:= connHistory[i];
-        mi.OnClick:= clickProc;
-        pm.Items.Add(mi);
+        if Trim(connHistory[i]) <> '' then begin
+            sid:= getSid(connHistory[i]);
+            sidMenuListIdx:= sidMenuList.IndexOf(sid);
+            if sidMenuListIdx < 0 then begin
+                miGrp:= TMenuItem.Create(Owner);
+                miGrp.Caption:= sid;
+                miGrp.ImageIndex:= 3;
+                pm.Items.Add(miGrp);
+                sidMenuList.AddObject(sid, miGrp);
+            end else begin
+                miGrp:= sidMenuList.Objects[sidMenuListIdx] as TMenuItem;
+            end;
+            mi:= TMenuItem.Create(Owner);
+            mi.Caption:= connHistory[i];
+            mi.OnClick:= clickProc;
+            miGrp.Add(mi);
+        end;
     end;
+    sidMenuList.Free;
+end;
+
+procedure PrepareLoginPopup(Owner: TComponent; var pm: TPopupMenu; connHistory: TStringList; clickProc: TNotifyEvent );
+var
+    i: Integer;
+    mi: TMenuItem;
+    miGrp: TMenuItem;
+    sidMenuList: TStringList;
+    sidMenuListIdx: Integer;
+begin
+    sidMenuList:= TStringList.Create;
+    pm.Items.Clear;
+    for i:= 0 to connHistory.Count-1 do begin
+        if Trim(connHistory[i]) <> '' then begin
+            mi:= TMenuItem.Create(Owner);
+            mi.Caption:= connHistory[i];
+            mi.OnClick:= clickProc;
+            pm.Items.Add(mi);
+        end;
+    end;
+    sidMenuList.Free;
 end;
 
 function ShowDialog(var lastConnection: String; var connHistory, loginHistory: TStringList; cl: TConnectionList): Boolean;
@@ -111,7 +160,7 @@ begin
 
     f.ApplyHistoryEntry(lastConnection);
     PreparePopup(f, f.pm_History, connHistory, f.miTemplateClick );
-    PreparePopup(f, f.pm_LoginHistory, loginHistory, f.miLoginTemplateClick );
+    PrepareLoginPopup(f, f.pm_LoginHistory, loginHistory, f.miLoginTemplateClick );
     f.mmoHistory.Lines.Text:= connHistory.Text;
     f.mmo_LoginHistory.Lines.Text:= LoginHistory.Text;
 
@@ -220,9 +269,10 @@ procedure TfrmConnect.ApplyLoginHistoryEntry(historyEntry: String);
 var
     ConnectionName, Username, Password, ServiceName, ConnectAs: String;
 begin
-    ParseLoginHistoryEntry(historyEntry, Username, Password);
+    ParseLoginHistoryEntry(historyEntry, Username, Password, ConnectAs);
     edtUsername.Text:= Username;
     edtPassword.Text:= Password;
+    cbbConnectAs.ItemIndex:= cbbConnectAs.Items.IndexOf(ConnectAs);
 end;
 
 procedure TfrmConnect.miLoginTemplateClick(Sender: TObject);
@@ -262,7 +312,7 @@ var
 begin
     sl:= TStringList.Create;
     sl.Text:= mmo_LoginHistory.Text;
-    PreparePopup(Self, Self.pm_LoginHistory, sl, self.miLoginTemplateClick );
+    PrepareLoginPopup(Self, Self.pm_LoginHistory, sl, self.miLoginTemplateClick );
     sl.Free;
     pgc1.ActivePage:= tsConnection;
 end;

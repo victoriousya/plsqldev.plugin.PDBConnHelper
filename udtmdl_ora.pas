@@ -13,6 +13,8 @@ type
     il_common: TImageList;
     orqryPdbs: TOraQuery;
     orscrptDropPdb: TOraScript;
+    orsn1: TOraSession;
+    orqry1: TOraQuery;
   private
     { Private declarations }
   public

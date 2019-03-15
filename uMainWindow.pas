@@ -29,7 +29,7 @@ type
     end;
 
 procedure ParseHistoryEntry(HistoryEntry: string; var ConnectionName, Username, Password, ServiceName, ConnectAs: String);
-procedure ParseLoginHistoryEntry(HistoryEntry: string; var Username, Password: String);
+procedure ParseLoginHistoryEntry(HistoryEntry: string; var Username, Password, ConnectAs: String);
 function replace_sid(serviceName, Database: String): String;
 function get_sid(Database: String): String;
 
@@ -71,7 +71,7 @@ begin
 
 end;
 
-procedure ParseLoginHistoryEntry(HistoryEntry: string; var Username, Password: String);
+procedure ParseLoginHistoryEntry(HistoryEntry: string; var Username, Password, ConnectAs: String);
 var
     slashPos: Integer;
     selText: string;
@@ -81,7 +81,14 @@ begin
         selText:= StringReplace(HistoryEntry, '&', '', [rfReplaceAll] );
         slashPos:= PosEx('/', selText, 1);
         Username:= Copy(selText, 1, slashPos - 1);
-        Password:= Copy(selText, slashPos + 1, 100);
+        Password:= Trim(Copy(selText, slashPos + 1, 1000));
+        if Pos(' as', Password) > 0 then begin
+           ConnectAs:= Trim(Copy(Password, Pos(' as', Password) + 4,  1000));
+           Password:= Copy(Password,1, Pos(' ', Password) - 1);
+        end else begin
+           ConnectAs:= 'NORMAL';
+        end;
+
     end else begin
         Username:= '';
         Password:= '';
@@ -95,14 +102,23 @@ var
 begin
   Result:= '';
   sidPos:= PosEx('SID=', Database, 1);
-  if sidPos <= 0 then begin
-      ShowMessage('"SID=" not found in Database connection string');
+  if sidPos > 0 then begin
+      closePos:= PosEx(')', Database, sidPos);
+      if closePos <= 0 then begin
+          ShowMessage('")" not found in Database connection string after "SID="');
+          Exit;
+      end;
+      Result:= Copy(Database, 1, sidPos-1)+'SERVICE_NAME='+serviceName+Copy(Database, closePos, Length(Database));
       Exit;
+  end else begin
+      // try to use server:port/sid
+      sidPos:= PosEx('/', Database, 1);
+      if sidPos > 0 then
+          result:= Copy(Database, 1, sidPos)+serviceName;
   end;
-  closePos:= PosEx(')', Database, sidPos);
-  if closePos <= 0 then
-      ShowMessage('")" not found in Database connection string after "SID="');
-  Result:= Copy(Database, 1, sidPos-1)+'SERVICE_NAME='+serviceName+Copy(Database, closePos, Length(Database));
+
+
+  if Result = '' then ShowMessage('Incorrect database connection string: '+ Database);
 end;
 
 function get_sid(Database: String): String;
@@ -112,14 +128,21 @@ begin
   Result:= '';
   sidPos:= PosEx('SID=', Database, 1);
   if sidPos <= 0 then begin
-      ShowMessage('"SID=" not found in Database connection string');
-      Exit;
+      closePos:= PosEx(')', Database, sidPos);
+      if closePos <= 0 then begin
+          ShowMessage('")" not found in Database connection string after "SID="');
+          Exit;
+      end;
+      Result:= Copy(Database, sidPos + Length('SID='), closePos - sidPos - Length('SID='));
+  end else begin
+      sidPos:= PosEx('/', Database, 1);
+      if sidPos > 0 then
+          result:= Copy(Database, sidPos+1, 30);
   end;
-  closePos:= PosEx(')', Database, sidPos);
-  if closePos <= 0 then
-      ShowMessage('")" not found in Database connection string after "SID="');
-  Result:= Copy(Database, sidPos + Length('SID='), closePos - sidPos - Length('SID='));
+
+  if Result = '' then ShowMessage('Incorrect database connection string: '+ Database);
 end;
+
 
 { TMainWindowMetods }
 

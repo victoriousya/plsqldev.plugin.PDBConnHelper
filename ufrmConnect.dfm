@@ -4,8 +4,8 @@ object frmConnect: TfrmConnect
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'PDB Connect'
-  ClientHeight = 198
-  ClientWidth = 377
+  ClientHeight = 200
+  ClientWidth = 378
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object frmConnect: TfrmConnect
   object pgc1: TPageControl
     Left = 0
     Top = 0
-    Width = 377
-    Height = 198
+    Width = 378
+    Height = 200
     ActivePage = tsConnection
     Align = alClient
     TabOrder = 0
@@ -29,8 +29,8 @@ object frmConnect: TfrmConnect
       object pnl1: TPanel
         Left = 0
         Top = 0
-        Width = 369
-        Height = 170
+        Width = 370
+        Height = 172
         Align = alClient
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -169,13 +169,13 @@ object frmConnect: TfrmConnect
       Caption = 'History'
       ImageIndex = 1
       DesignSize = (
-        369
-        170)
+        370
+        172)
       object mmoHistory: TMemo
         Left = 0
         Top = 0
-        Width = 369
-        Height = 129
+        Width = 370
+        Height = 131
         Anchors = [akLeft, akTop, akRight, akBottom]
         Lines.Strings = (
           'mmoHistory')
@@ -205,13 +205,13 @@ object frmConnect: TfrmConnect
       Caption = 'Login history'
       ImageIndex = 2
       DesignSize = (
-        369
-        170)
+        370
+        172)
       object mmo_LoginHistory: TMemo
         Left = 0
         Top = 0
-        Width = 369
-        Height = 129
+        Width = 370
+        Height = 131
         Anchors = [akLeft, akTop, akRight, akBottom]
         Lines.Strings = (
           'mmoHistory')
@@ -231,6 +231,7 @@ object frmConnect: TfrmConnect
   end
   object pm_History: TPopupMenu
     AutoPopup = False
+    Images = dtmdl_ora.il_common
     Left = 48
     Top = 56
   end
