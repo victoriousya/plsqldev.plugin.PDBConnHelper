@@ -22,6 +22,8 @@ type
     function connect(Username, Password, Database: string; ConnectAs: string = 'NORMAL'): Boolean;
     procedure disconnect;
     function test_connection(Username, Password, Database: string; ConnectAs: string = 'NORMAL'; ShowMsg: Boolean = True): Boolean;
+    function test_connection_err(Username, Password,
+        Database: string; ConnectAs: string = 'NORMAL'): string;
     function get_pdb_list(
         Username, Password, Database: string
     ): TStringList;
@@ -87,6 +89,23 @@ begin
             if ShowMsg then
                 dummy:= MessageDlg(E.Message,  mtError, [mbOK], 0);
             Result:= False;
+        end;
+    end;
+end;
+
+function Tdtmdl_ora.test_connection_err(Username, Password,
+  Database: string; ConnectAs: string = 'NORMAL'): string;
+var
+    dummy: Integer;
+    conn_result: Boolean;
+begin
+    try
+        Result:= '';
+        conn_result:= connect(Username, Password, Database, ConnectAs);
+        if conn_result then disconnect;
+    except
+        on E: Exception do begin
+            Result:= E.Message;
         end;
     end;
 end;

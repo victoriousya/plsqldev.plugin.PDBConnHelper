@@ -1,7 +1,7 @@
 object dtmdl_ora: Tdtmdl_ora
   OldCreateOrder = False
   Left = 705
-  Top = 275
+  Top = 284
   Height = 155
   Width = 435
   object orsn_cloner: TOraSession
@@ -15,7 +15,7 @@ object dtmdl_ora: Tdtmdl_ora
       'from v$pdbs t'
       
         'start with name != '#39'PDB$SEED'#39' and t.snapshot_parent_con_id is nu' +
-        'll'
+        'll and t.open_mode != '#39'MOUNTED'#39
       'connect by prior t.con_id = t.snapshot_parent_con_id'
       'order siblings by t.creation_time desc')
     Left = 88

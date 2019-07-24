@@ -46,6 +46,9 @@ type
     btn_LoginHistory: TButton;
     pm_LoginHistory: TPopupMenu;
     btn_ClearInvalid: TButton;
+    mmoLogInvalid: TMemo;
+    pnl2: TPanel;
+    splLogInvalid: TSplitter;
     procedure miTemplateClick(Sender: TObject);
     procedure btnRecentlyUsedClick(Sender: TObject);
     procedure cbb_BDBChange(Sender: TObject);
@@ -53,6 +56,7 @@ type
     procedure btn_ApplyLoginHistoryClick(Sender: TObject);
     procedure btn_LoginHistoryClick(Sender: TObject);
     procedure btn_ClearInvalidClick(Sender: TObject);
+    procedure tsHistoryEnter(Sender: TObject);
   private
     { Private declarations }
     cl: TConnectionList;
@@ -208,13 +212,18 @@ begin
                 Password:= conn.Password;
                 ServiceName:= get_sid(conn.Database);
                 ConnectAs:= f.cbbConnectAs.Items[0];
-                if ConnectAs <> '' then
+                if ConnectAs <> '' then begin
                     lastConnection:= Format('%s:%s/%s@%s as %s', [ConnectionName, Username, Password, ServiceName, ConnectAs])
-                else
+                end else begin
                     lastConnection:= Format('%s:%s/%s@%s', [ConnectionName, Username, Password, ServiceName]);
+                end;
+                if (ConnectAs <> f.cbbConnectAs.Items[0]) and (ConnectAs <> '') then begin
+                    loginStr:= Format('%s/%s as %s', [Username, Password, ConnectAs]);
+                end else begin
+                    loginStr:= Format('%s/%s', [Username, Password]);
+                end;
                 if connHistory.IndexOf(lastConnection) < 0 then
                     connHistory.Add(lastConnection);
-                loginStr:= Format('%s/%s', [Username, Password]);
                 if LoginHistory.IndexOf(loginStr) < 0 then
                     LoginHistory.Add(loginStr);
             except
@@ -303,6 +312,7 @@ begin
     sl.Text:= mmoHistory.Text;
     PreparePopup(Self, Self.pm_History, sl, self.miTemplateClick );
     sl.Free;
+    mmoLogInvalid.Visible:= False;
     pgc1.ActivePage:= tsConnection;
 end;
 
@@ -333,27 +343,39 @@ var
     cUsername, cPassword, cDatabase, cConnectAs: PANSIChar;
     sl: TStringList;
     i: Integer;
-    ConnRes: Boolean;
+    ConnRes: String;
     conn: TConnectionObject;
     connDB: string;
 begin
     sl:= TStringList.Create;
     sl.Text:= mmoHistory.Text;
     mmoHistory.Lines.Clear;
+    mmoLogInvalid.Lines.Clear;
+    mmoLogInvalid.Visible:= True;
+    splLogInvalid.Visible:= True;
+    splLogInvalid.Left:= 1;
     for i:= 0 to sl.Count-1 do begin
         Application.ProcessMessages;
         ParseHistoryEntry(sl[i], ConnectionName, Username, Password, ServiceName, ConnectAs);
         conn:= cl.FindByName(ConnectionName);
         connDB:= replace_sid(Trim(ServiceName), conn.Database);
         if connDB <> '' then
-            ConnRes:= dtmdl_ora.test_connection(Username, Password, connDB, ConnectAs)
+            ConnRes:= dtmdl_ora.test_connection_err(Username, Password, connDB, ConnectAs)
         else
-            ConnRes:= False;
-        if ConnRes then
-            mmoHistory.Lines.Add(sl[i]);
+            ConnRes:= '';
+        if ConnRes = '' then
+            mmoHistory.Lines.Add(sl[i])
+        else
+            mmoLogInvalid.Lines.Add(ConnRes);
     end;
     sl.Free;
 
+end;
+
+procedure TfrmConnect.tsHistoryEnter(Sender: TObject);
+begin
+    mmoLogInvalid.Visible:= False;
+    splLogInvalid.Visible:= False;
 end;
 
 end.

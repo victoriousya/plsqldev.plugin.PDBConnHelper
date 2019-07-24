@@ -1,11 +1,11 @@
 object frmConnect: TfrmConnect
   Left = 488
-  Top = 331
+  Top = 341
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'PDB Connect'
-  ClientHeight = 200
-  ClientWidth = 378
+  ClientHeight = 194
+  ClientWidth = 375
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object frmConnect: TfrmConnect
   object pgc1: TPageControl
     Left = 0
     Top = 0
-    Width = 378
-    Height = 200
+    Width = 375
+    Height = 194
     ActivePage = tsConnection
     Align = alClient
     TabOrder = 0
@@ -29,8 +29,8 @@ object frmConnect: TfrmConnect
       object pnl1: TPanel
         Left = 0
         Top = 0
-        Width = 370
-        Height = 172
+        Width = 367
+        Height = 166
         Align = alClient
         BevelInner = bvRaised
         BevelOuter = bvLowered
@@ -168,50 +168,81 @@ object frmConnect: TfrmConnect
     object tsHistory: TTabSheet
       Caption = 'History'
       ImageIndex = 1
+      OnEnter = tsHistoryEnter
       DesignSize = (
-        370
-        172)
-      object mmoHistory: TMemo
-        Left = 0
-        Top = 0
-        Width = 370
-        Height = 131
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        Lines.Strings = (
-          'mmoHistory')
-        TabOrder = 0
-        WordWrap = False
-      end
+        367
+        166)
       object btn_ApplyHistory: TButton
         Left = 91
-        Top = 136
+        Top = 131
         Width = 75
         Height = 25
+        Anchors = [akLeft, akBottom]
         Caption = 'Apply'
-        TabOrder = 1
+        TabOrder = 0
         OnClick = btn_ApplyHistoryClick
       end
       object btn_ClearInvalid: TButton
         Left = 208
-        Top = 136
+        Top = 131
         Width = 75
         Height = 25
+        Anchors = [akLeft, akBottom]
         Caption = 'Clear_Invalid'
-        TabOrder = 2
+        TabOrder = 1
         OnClick = btn_ClearInvalidClick
+      end
+      object pnl2: TPanel
+        Left = 0
+        Top = 0
+        Width = 367
+        Height = 123
+        Align = alTop
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Caption = 'pnl2'
+        TabOrder = 2
+        object splLogInvalid: TSplitter
+          Left = 58
+          Top = 1
+          Height = 121
+          Align = alRight
+          Visible = False
+        end
+        object mmoHistory: TMemo
+          Left = 1
+          Top = 1
+          Width = 57
+          Height = 121
+          Align = alClient
+          Lines.Strings = (
+            'mmoHistory')
+          TabOrder = 0
+          WordWrap = False
+        end
+        object mmoLogInvalid: TMemo
+          Left = 61
+          Top = 1
+          Width = 305
+          Height = 121
+          Align = alRight
+          Lines.Strings = (
+            'mmoLogInvalid')
+          TabOrder = 1
+          Visible = False
+        end
       end
     end
     object ts1: TTabSheet
       Caption = 'Login history'
       ImageIndex = 2
       DesignSize = (
-        370
-        172)
+        367
+        166)
       object mmo_LoginHistory: TMemo
         Left = 0
         Top = 0
-        Width = 370
-        Height = 131
+        Width = 367
+        Height = 125
         Anchors = [akLeft, akTop, akRight, akBottom]
         Lines.Strings = (
           'mmoHistory')
